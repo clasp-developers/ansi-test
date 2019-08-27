@@ -77,35 +77,35 @@
    for c2 = (complex onem z)
    for c3 = (complex z one)
    for c4 = (complex z onem)
-   unless (eql c1 (signum c1))
+   unless (approx-eql c1 (signum c1))
    collect (list c1 (signum c1))
-   unless (eql c2 (signum c2))
+   unless (approx-eql c2 (signum c2))
    collect (list c2 (signum c2))
-   unless (eql c3 (signum c3))
+   unless (approx-eql c3 (signum c3))
    collect (list c3 (signum c3))
-   unless (eql c4 (signum c4))
+   unless (approx-eql c4 (signum c4))
    collect (list c4 (signum c4)))
   nil)
 
 (deftest signum.8
   (let* ((c (complex 0 1))
          (s (signum c)))
-    (or (eqlt c s)
-        (eqlt s #c(0.0 1.0))))
+    (or (approx-eql c s)
+        (approx-eql s #c(0.0 1.0))))
   t)
 
 (deftest signum.9
   (let* ((c (complex 0 -1))
          (s (signum c)))
-    (or (eqlt c s)
-        (eqlt s #c(0.0 -1.0))))
+    (or (approx-eql c s)
+        (approx-eql s #c(0.0 -1.0))))
   t)
 
 (deftest signum.10
   (let* ((c (complex 3/5 4/5))
          (s (signum c)))
-    (or (eqlt c s)
-        (eqlt s (complex (float 3/5) (float 4/5)))))
+    (or (approx-eql c s)
+        (approx-eql s (complex (float 3/5) (float 4/5)))))
   t)
 
 (deftest signum.11
