@@ -218,12 +218,25 @@
   (<= (realpart (expt -8 1/3)) 0.0)
   nil)
 
+(deftest expt.29
+  ;; type contagion test for (expt 0 y) with (realpart y)>0
+  (loop for x in '(0 0.0f0 0.0d0 0.0l0
+                   #C(0.0f0 0.0f0) #C(0.0d0 0.0d0) #C(0.0l0 0.0l0))
+     append
+		 (loop
+			 for y in '(2 2.0f0 2.0d0 2.0l0
+                     #C(2 2) #C(2 1/2)
+                     #C(2.0f0 0.5f0) #C(2.0d0 0.5d0) #C(2.0l0 0.5l0))
+          unless (eql (* x y) (expt x y))
+			 collect (list x y (expt x y))))
+  nil)
+
 #|
 ;;; FIXME
 ;;; I need to think more about how to do approximate float
 ;;; equality in a principled way.
 
-(deftest expt.29
+(deftest expt.30
   (loop for bound in '(1.0s4 1.0f6 1.0d8 1.0l8)
         for ebound in (list short-float-epsilon single-float-epsilon
                             double-float-epsilon long-float-epsilon)
@@ -238,7 +251,7 @@
               collect (list x s1 s2)))
   nil)
 
-(deftest expt.30
+(deftest expt.31
   (loop for bound in '(1.0s4 1.0f6 1.0d8 1.0l8)
         for ebound in (list short-float-epsilon single-float-epsilon
                             double-float-epsilon long-float-epsilon)
