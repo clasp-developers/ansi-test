@@ -470,5 +470,127 @@
          collect (list d result expected-result)))
   nil)
 
+;;; *print-length* checks
+
+(deftest print.array.length.1
+  (with-standard-io-syntax
+    (write-to-string #2A(()) :pretty nil :length 0 :readably nil))
+  "#2A(...)")
+
+(deftest print.array.length.2
+  (with-standard-io-syntax
+    (write-to-string #2A(()) :pretty nil :length 1 :readably nil))
+  "#2A(())")
+
+(deftest print.array.length.3
+  (with-standard-io-syntax
+    (write-to-string #2A((1)) :pretty nil :length 0 :readably nil))
+  "#2A(...)")
+
+(deftest print.array.length.4
+  (with-standard-io-syntax
+    (write-to-string #2A((1)) :pretty nil :length 1 :readably nil))
+  "#2A((1))")
+
+(deftest print.array.length.5
+  (with-standard-io-syntax
+    (write-to-string #2A((a b c d e f g h))
+                    :pretty nil
+                    :array t :escape nil
+                    :length 5 :case :downcase
+                    :readably nil))
+  "#2A((a b c d e ...))")
+
+(deftest print.array.length.6
+  (with-standard-io-syntax
+    (write-to-string #2A((a b) (c d))
+                    :pretty nil
+                    :array t :escape nil
+                    :length 1 :case :downcase
+                    :readably nil))
+  "#2A((a ...) ...)")
+
+(deftest print.array.length.7
+  (with-standard-io-syntax
+    (write-to-string #2A((a b) (c d))
+                    :pretty nil
+                    :array t :escape nil
+                    :length 2 :case :downcase
+                    :readably nil))
+  "#2A((a b) (c d))")
+
+;;; Printing with *print-level* bound
+
+(deftest print.array.level.1
+  (with-standard-io-syntax
+    (let ((output (write-to-string #2A(())
+                                   :level 0
+                                   :readably nil
+                                   :pretty nil)))
+      ;; specification only says
+      ;; > *print-level* and *print-length* affect the printing of
+      ;;   any object printed with a list-like syntax.
+      ;; therefore both options should be valid
+      (or (equal output "#2A#")
+          (equal output "#"))))
+  t)
+
+(deftest print.array.level.2
+  (with-standard-io-syntax
+    (write-to-string #2A(()) :level 1 :readably nil :pretty nil))
+  "#2A(#)")
+
+(deftest print.array.level.3
+  (with-standard-io-syntax
+    (write-to-string #2A(()) :level 2 :readably nil :pretty nil))
+  "#2A(())")
+
+(deftest print.array.level.4
+  (with-standard-io-syntax
+    (write-to-string #2A((17)) :level 2 :readably nil :pretty nil))
+  "#2A((17))")
+
+(deftest print.array.level.5
+  (with-standard-io-syntax
+    (write-to-string #2A((4 (17)) (9 (a)) ((b) 0)) :level 2 :readably nil :pretty nil))
+  "#2A((4 #) (9 #) (# 0))")
+
+(deftest print.array.level.6
+  (with-standard-io-syntax
+    (write-to-string '(#2A((a))) :level 2 :readably nil :pretty nil))
+  "(#2A(#))")
+
+(deftest print.array.level.7
+  (with-standard-io-syntax
+    (write-to-string #2A((#2A((a)))) :level 1 :readably nil :pretty nil))
+  "#2A(#)")
+
+(deftest print.array.level.8
+  (with-standard-io-syntax
+    (write-to-string #2A((#2A((a)))) :level 2 :readably nil :pretty nil))
+  "#2A((#))")
+
+(deftest print.array.level.9
+  (with-standard-io-syntax
+    (write-to-string #2A((#2A((a)))) :level 3 :readably nil :pretty nil))
+  "#2A((#2A(#)))")
+
+(deftest print.array.level.10
+  (with-standard-io-syntax
+    (write-to-string #2A((#2A((a))))
+                     :level 4 :readably nil
+                     :pretty nil :escape nil
+                     :case :downcase))
+  "#2A((#2A((a))))")
+
+;;; Printing with *print-circle* bound
+
+(deftest print.array.circle.1
+  (let ((array (make-array (list 2 2) :initial-contents '((5 6) (7 8)))))
+    (setf (aref array 1 1) array)
+    (with-standard-io-syntax
+      (write-to-string array :circle t :readably nil :pretty nil)))
+  "#1=#2A((5 6) (7 #1#))")
+
 ;;; To add: more tests for high dimensional arrays, including arrays with
 ;;; element types

@@ -421,3 +421,11 @@
    (write-to-string '#(#(a)) :level 1 :readably nil :pretty nil))
   "#(#)")
 
+;;; Printing with *print-circle* bound
+
+(deftest print.vector.circle.1
+  (let ((vector (vector 25 26 27)))
+    (setf (aref vector 2) vector)
+    (with-standard-io-syntax
+      (write-to-string vector :circle t :readably nil :pretty nil)))
+  "#1=#(25 26 #1#)")
