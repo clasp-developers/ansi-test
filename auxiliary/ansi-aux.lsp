@@ -1137,6 +1137,9 @@ the condition to go uncaught if it cannot be classified."
 (defun approx= (x y &optional (eps (epsilon x)))
   (<= (abs (/ (- x y) (max (abs x) 1))) eps))
 
+(defun approx-eql (x y)
+  (and (approx= x y) (typep x (type-of y))))
+
 (defun epsilon (number)
   (etypecase number
     (complex (* 2 (epsilon (realpart number)))) ;; crude
