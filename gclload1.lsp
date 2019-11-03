@@ -37,6 +37,8 @@
   (compile-and-load "rt.lsp")
   (load "cl-test-package.lsp")
   (in-package :cl-test)
+  #+cmucl
+  (load "rt-cmucl.lsp")
   (compile-and-load* "ansi-aux-macros.lsp")
   (handler-bind
    #-sbcl ()
