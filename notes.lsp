@@ -50,6 +50,14 @@ If negative zeros are distinct this is probably not good, since it makes (defcon
   "Assume that the values of iteration values in LOOP's FINALLY clause are defined to never
 overstep the iteration limit.")
 
+(defnote :no-floating-point-underflow-by-default
+  "Assume that the implementation purposefully does not conform to 12.1.4.3 by not signaling 
+FLOATING-POINT-UNDERFLOW by default.
+
+A reason for lack of conformance might be contradictory wording in the spec:
+12.1.4.3 mentions that the errors should be signaled, while arithmetic
+operations mention that they \"might signal\" the error.")
+
 ;;; Haible disagrees with :result-type-element-type-by-subtype
 #+clisp (rt::disable-note :result-type-element-type-by-subtype)
 #+(or openmcl gcl ecl) (rt::disable-note :nil-vectors-are-strings)

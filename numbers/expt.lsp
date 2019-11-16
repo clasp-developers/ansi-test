@@ -36,18 +36,22 @@
   t)
 
 (deftest expt.error.8
+  :notes (:no-floating-point-underflow-by-default :ansi-spec-problem)
   (signals-error (expt least-positive-short-float 2) floating-point-underflow)
   t)
 
 (deftest expt.error.9
+  :notes (:no-floating-point-underflow-by-default :ansi-spec-problem)
   (signals-error (expt least-positive-single-float 2) floating-point-underflow)
   t)
 
 (deftest expt.error.10
+  :notes (:no-floating-point-underflow-by-default :ansi-spec-problem)
   (signals-error (expt least-positive-double-float 2) floating-point-underflow)
   t)
 
 (deftest expt.error.11
+  :notes (:no-floating-point-underflow-by-default :ansi-spec-problem)
   (signals-error (expt least-positive-long-float 2) floating-point-underflow)
   t)
 
