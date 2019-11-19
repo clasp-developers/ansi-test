@@ -6,12 +6,14 @@
 *.lx64fsl
 *.lx32fsl
 *.bc
+*.tem
 sandbox/
 ansi-aux-macros.fas
 ansi-aux.fas
 array-aux.fas
 backquote-aux.fas
 bit-aux.fas
+bss-last.txt
 ceiling-aux.fas
 char-aux.fas
 cl-symbols-aux.fas

@@ -46,6 +46,10 @@ If negative zeros are distinct this is probably not good, since it makes (defcon
   "Assume that (for sequence functions MAP, etc.) the element type of a vector result type
    is defined to be the type X such that result-type is a subtype of (vector X).")
 
+(defnote :loop-iteration-values-in-finally
+  "Assume that the values of iteration values in LOOP's FINALLY clause are defined to never
+overstep the iteration limit.")
+
 ;;; Haible disagrees with :result-type-element-type-by-subtype
 #+clisp (rt::disable-note :result-type-element-type-by-subtype)
 #+(or openmcl gcl ecl) (rt::disable-note :nil-vectors-are-strings)
