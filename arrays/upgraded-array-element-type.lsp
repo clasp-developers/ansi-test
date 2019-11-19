@@ -111,7 +111,7 @@
 ;;; Test of upgrading NIL (it should be type equivalent to NIL).
 ;;; This follows from:
 ;;;   (1) T1 being a subtype of T2 implies UAET(T1) is a subtype of UAET(T2)
-          (see section 15.1.2.1, paragraph 3),
+;;;       (see section 15.1.2.1, paragraph 3),
 ;;;   (2) UAET(BIT) being BIT,
 ;;;   (3) UAET(CHARACTER) being CHARACTER.
 ;;; NIL is a subtype of BIT and CHARACTER, so UAET(NIL) must also be.  But the
