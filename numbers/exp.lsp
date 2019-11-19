@@ -62,21 +62,25 @@
   t)
 
 (deftest exp.error.8
+  :notes (:no-floating-point-underflow-by-default :ansi-spec-problem)
   (signals-error (exp (- (log least-positive-short-float) 100))
                  floating-point-underflow)
   t)
 
 (deftest exp.error.9
+  :notes (:no-floating-point-underflow-by-default :ansi-spec-problem)
   (signals-error (exp (- (log least-positive-single-float) 100))
                  floating-point-underflow)
   t)
 
 (deftest exp.error.10
+  :notes (:no-floating-point-underflow-by-default :ansi-spec-problem)
   (signals-error (exp (- (log least-positive-double-float) 100))
                  floating-point-underflow)
   t)
 
 (deftest exp.error.11
+  :notes (:no-floating-point-underflow-by-default :ansi-spec-problem)
   (signals-error (exp (- (log least-positive-double-float) 100))
                  floating-point-underflow)
   t)
