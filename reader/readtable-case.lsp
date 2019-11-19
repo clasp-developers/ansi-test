@@ -58,18 +58,19 @@
 ;; readtable-case reading
 (symbol-macrolet ((lookup-table
                    '(:SYMBOL   ("zebra" "Zebra" "ZEBRA" "zebr\\a" "zebr\\A" "ZEBR\\a" "ZEBR\\A" "Zebr\\a" "Zebr\\A")
-                     :UPCASE   (|ZEBRA| |ZEBRA| |ZEBRA| |ZEBRa|   |ZEBRA|   |ZEBRa|   |ZEBRA|   |ZEBRa|   |ZEBRA|)
-                     :DOWNCASE (|zebra| |zebra| |zebra| |zebra|   |zebrA|   |zebra|   |zebrA|   |zebra|   |zebrA|)
-                     :PRESERVE (|zebra| |Zebra| |ZEBRA| |zebra|   |zebrA|   |ZEBRa|   |ZEBRA|   |Zebra|   |ZebrA|)
-                     :INVERT   (|ZEBRA| |Zebra| |zebra| |ZEBRa|   |ZEBRA|   |zebra|   |zebrA|   |Zebra|   |ZebrA|))))
+                     :UPCASE   ("ZEBRA" "ZEBRA" "ZEBRA" "ZEBRa"   "ZEBRA"   "ZEBRa"   "ZEBRA"   "ZEBRa"   "ZEBRA")
+                     :DOWNCASE ("zebra" "zebra" "zebra" "zebra"   "zebrA"   "zebra"   "zebrA"   "zebra"   "zebrA")
+                     :PRESERVE ("zebra" "Zebra" "ZEBRA" "zebra"   "zebrA"   "ZEBRa"   "ZEBRA"   "Zebra"   "ZebrA")
+                     :INVERT   ("ZEBRA" "Zebra" "zebra" "ZEBRa"   "ZEBRA"   "zebra"   "zebrA"   "Zebra"   "ZebrA"))))
   (macrolet
       ((def-readtable-case-test (reader-case)
-         `(deftest ,(make-symbol (concatenate 'string "READTABLE-CASE.CASE-"
-                                              (symbol-name reader-case)))
+         `(deftest ,(intern (concatenate 'string "READTABLE-CASE.CASE-"
+                                         (symbol-name reader-case))
+                     (find-package :cl-test))
               (let ((*readtable* (copy-readtable)))
                 (setf (readtable-case *readtable*) ,reader-case)
                 (mapcar #'(lambda (x)
-                            (read-from-string x))
+                            (symbol-name (read-from-string x)))
                         ',(getf lookup-table :symbol)))
             ,(getf lookup-table reader-case))))
     (def-readtable-case-test :upcase)
