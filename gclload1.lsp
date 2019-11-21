@@ -37,8 +37,9 @@
   (compile-and-load "rt.lsp")
   (load "cl-test-package.lsp")
   (in-package :cl-test)
+  ;; Load up customizations.  It's ok if the file doesn't exist.
   #+cmucl
-  (load "rt-cmucl.lsp")
+  (load "rt-cmucl.lsp" :if-does-not-exist nil)
   (compile-and-load* "ansi-aux-macros.lsp")
   (handler-bind
    #-sbcl ()

@@ -1,12 +1,3 @@
-(in-package :cl-user)
-;; Run tests with the same initial random state
-(setf *random-state*
-      #s(random-state
-	 :state #.(kernel:init-random-state #(#x289414cfd3032efe
-					      #x57afc7e1b8be2a7c))
-	 :rand 0
-	 :cached-p nil))
-
 (in-package :cl-test)
 
 (setf rt::*expected-failures*
