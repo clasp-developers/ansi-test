@@ -559,9 +559,16 @@
 (def-format-test format.f.45b
     "~3f" (1.1) "1.1")
 
-;; This fails on ECL 15.3.7
+;;; Rationale for FORMAT.F.46: (format nil "~2f ~1f ~0f" 0.01 0.01 0.01) on SBCL
+;;; 1.5.7 evaluates to ".0 .01 .01" which is enough for me to state that these
+;;; three cases are not a part of one equivalence partition and that testing for
+;;; these three cases explicitly is likely to find bugs in implementations:
+;;; * ~2f is a case where the resulting float fits in the width;
+;;; * ~1f is a case where the resulting float does not fit in the width;
+;;; * ~0f is a case where the width is zero and therefore might be handled
+;;;   specially in the code.
 (def-format-test format.f.46
-    "~0f" (0.01) ".0")
+    "~2f ~1f ~0f" (0.01 0.01 0.01) ".0 .0 .0")
 
 ;; sbcl prints "."
 (def-format-test format.f.46b
