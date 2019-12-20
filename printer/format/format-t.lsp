@@ -261,20 +261,6 @@
         collect (list n1 n2 inc s2 result))
   nil)
 
-;;; see 22.3.5.2
-
-(deftest format.\:t.error.1
-  (signals-error-always (format nil "~<XXX~1,1:TYYY~>") error)
-  t t)
-
-(deftest format.\:t.error.2
-  (signals-error-always (format nil "~<XXX~:;YYY~>ZZZ~4,5:tWWW") error)
-  t t)
-
-(deftest format.\:t.error.3
-  (signals-error-always (format nil "AAAA~1,1:TBBB~<XXX~:;YYY~>ZZZ") error)
-  t t)
-
 ;;; ~:@t
 
 (def-pprint-test format.\:@t.1

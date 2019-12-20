@@ -277,3 +277,26 @@ X CCC")
   (signals-error-always (format nil "~i~<X~:;Y~>") error)
   t t)
 
+;;; Interaction with ~:T
+
+(deftest format.justify.error.\:t.1
+  (signals-error-always (format nil "~<XXX~1,1:TYYY~>") error)
+  t t)
+
+(deftest format.justify.error.\:t.2
+  (signals-error-always (format nil "~<XXX~:;YYY~>ZZZ~4,5:tWWW") error)
+  t t)
+
+(deftest format.justify.error.\:t.3
+  (signals-error-always (format nil "AAAA~1,1:TBBB~<XXX~:;YYY~>ZZZ") error)
+  t t)
+
+;;; Interaction with ~<...~:>
+
+(deftest format.justify.error.logical-block.1
+  (signals-error-always (format nil "~<~:;~>~<~:>" nil nil nil) error)
+  t t)
+
+(deftest format.justify.error.logical-block.2
+  (signals-error-always (format nil "~<~:>~<~:;~>" nil nil nil) error)
+  t t)
