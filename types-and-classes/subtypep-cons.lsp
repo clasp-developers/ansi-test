@@ -374,3 +374,20 @@
           (and (not sub1) (not sub2))))))
   t)
 
+(defun subtypep.cons.44.foo (x) (declare (ignore x)) (= 1 (random 2)))
+(defun subtypep.cons.44.bar (x) (declare (ignore x)) (= 1 (random 2)))
+(defun subtypep.cons.44.baz (x) (declare (ignore x)) (= 1 (random 2)))
+(defun subtypep.cons.44.qux (x) (declare (ignore x)) (= 1 (random 2)))
+
+(deftest subtypep.cons.44
+    (let* ((t1 `(cons (not float)))
+           (t2 `(or (cons (satisfies subtypep.cons.44.foo)
+                          (satisfies subtypep.cons.44.bar))
+                    (cons (satisfies subtypep.cons.44.baz)
+                          (satisfies subtypep.cons.44.qux)))))
+      (multiple-value-bind (sub1 good1)
+          (subtypep* t1 t2)
+        (multiple-value-bind (sub2 good2)
+            (subtypep* `(not ,t2) `(not ,t1))
+          (and (not sub1) (not sub2) (not good1) (not good2)))))
+  t)
