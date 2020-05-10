@@ -4,7 +4,7 @@
 ;;;; Contains: Tests for EQUALP
 
 
-
+;;; Characters
 (deftest equalp.1
   (loop for c across +base-chars+
         always (loop for d across +base-chars+
@@ -12,6 +12,7 @@
                               (not (equalpt c d)))))
   t)
 
+;;; Fixnums
 (deftest equalp.2
   (loop for i from 1 to 100
         always (loop for j from 1 to 100
@@ -19,6 +20,7 @@
                               (not (equalpt i j)))))
   t)
 
+;;; Strings
 (deftest equalp.3
   (equalpt "abc" "ABC")
   t)
@@ -27,6 +29,7 @@
   (equalpt "abc" "abd")
   nil)
 
+;;; Arrays
 (deftest equalp.5
   :notes (:allow-nil-arrays)
   (equalpt (make-array '(0) :element-type nil) #())
@@ -106,6 +109,7 @@
     (equalpt bv v))
   t)
 
+;;; Structures
 (defstruct equalp-struct-16
   a b c)
 
@@ -121,6 +125,7 @@
             (equalpt s2 s3)))
   t nil nil)
 
+;;; Floats
 (deftest equalp.17
   (loop for i below 8192
         for f = (float i 1.0s0)
@@ -153,6 +158,7 @@
         collect (list i f))
   nil)
 
+;;; Hash tables
 (deftest equalp.21
   (let ((ht1 (make-hash-table :test #'eq))
         (ht2 (make-hash-table :test #'eql))
@@ -202,6 +208,14 @@
     (equalpt ht1 ht2))
   t)
 
+(deftest equalp.27a
+  (let ((ht1 (make-hash-table :test #'eq))
+        (ht2 (make-hash-table :test #'eq)))
+    (setf (gethash 'a ht1) #\a)
+    (setf (gethash 'a ht2) #\b)
+    (equalpt ht1 ht2))
+  nil)
+
 (deftest equalp.28
   (let ((ht1 (make-hash-table :test #'eql))
         (ht2 (make-hash-table :test #'eql)))
@@ -217,6 +231,14 @@
     (setf (gethash #\a ht2) "A")
     (equalpt ht1 ht2))
   t)
+
+(deftest equalp.29a
+  (let ((ht1 (make-hash-table :test #'eql))
+        (ht2 (make-hash-table :test #'eql)))
+    (setf (gethash #\a ht1) "a")
+    (setf (gethash #\a ht2) "b")
+    (equalpt ht1 ht2))
+  nil)
 
 (deftest equalp.30
   (let ((ht1 (make-hash-table :test #'equal))
@@ -234,6 +256,14 @@
     (equalpt ht1 ht2))
   t)
 
+(deftest equalp.31a
+  (let ((ht1 (make-hash-table :test #'equal))
+        (ht2 (make-hash-table :test #'equal)))
+    (setf (gethash #\a ht1) "a")
+    (setf (gethash #\a ht2) "b")
+    (equalpt ht1 ht2))
+  nil)
+
 (deftest equalp.32
   (let ((ht1 (make-hash-table :test #'equalp))
         (ht2 (make-hash-table :test #'equalp)))
@@ -249,6 +279,14 @@
     (setf (gethash #\a ht2) "A")
     (equalpt ht1 ht2))
   t)
+
+(deftest equalp.33a
+  (let ((ht1 (make-hash-table :test #'equalp))
+        (ht2 (make-hash-table :test #'equalp)))
+    (setf (gethash #\a ht1) "a")
+    (setf (gethash #\a ht2) "b")
+    (equalpt ht1 ht2))
+  nil)
 
 (deftest equalp.34
   (let ((ht1 (make-hash-table :test #'equalp))
@@ -282,6 +320,7 @@
                   (not (equalp ht1 ht2))))))
   (0 0 0 0))
 
+;;; Instances
 (defclass equalp-class-36 () ((slot1 :initarg :slot1) (slot2 :initarg :slot2)))
 
 ;;; If structure is backed up by an instance, it may happen that
