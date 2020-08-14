@@ -125,6 +125,20 @@
    (loop with x = (expand-in-current-env (%m 1)) do (return x)))
   1)
 
+;;; Test that the variable list may be shorter than values list.
+
+(deftest loop.8.25
+  (loop with (a b) = '(1)
+        for (c d) = '(2)
+        do (return (values a b c d)))
+  1 nil 2 nil)
+
+(deftest loop.8.26
+  (loop with (a b . rest) = '(1)
+        for (c d) = '(2)
+        do (return (values a b c d rest)))
+  1 nil 2 nil nil)
+
 ;;; Error cases
 
 ;;; The spec says (in section 6.1.1.7) that:
