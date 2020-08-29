@@ -44,7 +44,15 @@
 
 #+cmu
 (progn
+  ;; Initialize the random state so that the random tests are
+  ;; consistent when we run them.  (Provided we run all of them in the
+  ;; same order.)
+  (setf *random-state* (kernel::make-random-object :state (kernel::init-random-state)))
+
+  ;; Reader tests expect errors if there are extra close parentheses.
   (setf ext:*ignore-extra-close-parentheses* nil)
+
+  ;; Cmucl doesn't support the idea that vectors of type nil are strings.
   (rt:disable-note :nil-vectors-are-strings))
 
 #+gcl(si::use-fast-links nil)
