@@ -343,7 +343,9 @@
                       ((:catch-errors *catch-errors*) *catch-errors*)
                       ((:compile *compile-tests*) *compile-tests*))
   (setq *failed-tests* nil
-        *passed-tests* nil)
+        *passed-tests* nil
+	*unexpected-failures* nil
+	*unexpected-successes nil)
   (dolist (entry (cdr *entries*))
     (setf (pend entry) t))
   (if (streamp out)
