@@ -12,9 +12,10 @@
 (deftest print-structure.1
   (let ((s (make-print-struct-1 :foo 1 :bar 2)))
     (with-standard-io-syntax
-      (let ((*tst-pkg* (find-package "CL-TEST"))
-            (*kwd-pkg* (find-package "KEYWORD")))
-       (let ((str (write-to-string s :readably nil :case :upcase :escape nil)))
+      (let* ((*package* (find-package "CL-TEST"))
+             (*tst-pkg* *package*)
+             (*kwd-pkg* (find-package "KEYWORD")))
+        (let ((str (write-to-string s :readably nil :case :upcase :escape nil)))
          (assert (string= (subseq str 0 3) "#S("))
          (let ((vals (read-from-string (subseq str 2))))
            (assert (listp vals))

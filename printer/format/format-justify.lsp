@@ -231,6 +231,73 @@ X AAA,
 X BBB,
 X CCC")
 
+;;; Interaction with ~T and ~@T. Unlike ~:T, this should not signal an error.
+
+;; ~<...~>: Three segments of 4 characters to justify: "AA  ", "BBBB", "CCCC"
+(def-pprint-test format.justify.33
+  ;; ~T, no padding
+  (format nil "~12,,,'*<AA~4T~;BBBB~;CCCC~>")
+  "AA  BBBBCCCC")
+
+(def-pprint-test format.justify.34
+  ;; ~T, one padding character per segment
+  (format nil "~15,,,'*<AA~4T~;BBBB~;CCCC~>")
+  "AA  *BBBB**CCCC")
+
+(def-pprint-test format.justify.35
+  ;; ~@T, no padding
+  (format nil "~12,,,'*<AA~1,2@T~;BBBB~;CCCC~>")
+  "AA  BBBBCCCC")
+
+(def-pprint-test format.justify.36
+  ;; ~@T, one padding character per segment
+  (format nil "~15,,,'*<AA~1,2@T~;BBBB~;CCCC~>")
+  "AA  *BBBB**CCCC")
+
+;; ~<...~:;...~>: First output "AA ", then justify "CCCC" and
+;; "DDDD". Optionally output newline and "BBBB" beforehand if the
+;; output doesn't fit in the line width.
+(def-pprint-test format.justify.37
+  ;; no padding, output fits
+  (format nil "AA~4T~8,,,'*<~%BBBB~,12:;CCCC~;DDDD~>")
+  "AA  CCCCDDDD")
+
+(def-pprint-test format.justify.38
+  ;; no padding, output doesn't fit
+  (format nil "AA~4T~8,,,'*<~%BBBB~,11:;CCCC~;DDDD~>")
+  "AA  
+BBBBCCCCDDDD")
+
+(def-pprint-test format.justify.39
+  ;; one padding character per segment, output fits
+  (format nil "AA~4T~10,,,'*<~%BBBB~,14:;CCCC~;DDDD~>")
+  "AA  CCCC**DDDD")
+
+(def-pprint-test format.justify.40
+  ;; one padding character per segment, output doesn't fit
+  (format nil "AA~4T~10,,,'*<~%BBBB~,13:;CCCC~;DDDD~>")
+  "AA  
+BBBBCCCC**DDDD")
+
+(def-pprint-test format.justify.41
+  ;; Same with ~@T
+  (format nil "AA~1,2@T~8,,,'*<~%BBBB~,12:;CCCC~;DDDD~>")
+  "AA  CCCCDDDD")
+
+(def-pprint-test format.justify.42
+  (format nil "AA~1,2@T~8,,,'*<~%BBBB~,11:;CCCC~;DDDD~>")
+  "AA  
+BBBBCCCCDDDD")
+
+(def-pprint-test format.justify.43
+  (format nil "AA~1,2@T~10,,,'*<~%BBBB~,14:;CCCC~;DDDD~>")
+  "AA  CCCC**DDDD")
+
+(def-pprint-test format.justify.44
+  (format nil "AA~1,2@T~10,,,'*<~%BBBB~,13:;CCCC~;DDDD~>")
+  "AA  
+BBBBCCCC**DDDD")
+
 ;;; Error cases
 
 ;;; See 22.3.5.2
@@ -277,3 +344,26 @@ X CCC")
   (signals-error-always (format nil "~i~<X~:;Y~>") error)
   t t)
 
+;;; Interaction with ~:T
+
+(deftest format.justify.error.\:t.1
+  (signals-error-always (format nil "~<XXX~1,1:TYYY~>") error)
+  t t)
+
+(deftest format.justify.error.\:t.2
+  (signals-error-always (format nil "~<XXX~:;YYY~>ZZZ~4,5:tWWW") error)
+  t t)
+
+(deftest format.justify.error.\:t.3
+  (signals-error-always (format nil "AAAA~1,1:TBBB~<XXX~:;YYY~>ZZZ") error)
+  t t)
+
+;;; Interaction with ~<...~:>
+
+(deftest format.justify.error.logical-block.1
+  (signals-error-always (format nil "~<~:;~>~<~:>" nil nil nil) error)
+  t t)
+
+(deftest format.justify.error.logical-block.2
+  (signals-error-always (format nil "~<~:>~<~:;~>" nil nil nil) error)
+  t t)

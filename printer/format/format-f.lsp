@@ -535,15 +535,40 @@
         collect (list i c f1 s1 s2))
   nil)
 
+;;; Rationale for FORMAT.F.45: CLHS 22.3.3.1 states that "d is the number of
+;;; digits to print after the decimal point;" AND that the number is printed
+;;; "rounded to d fractional digits".
+;;;
+;;; If we want to print 1.1 in a field of width 0, then we compute D to be W,
+;;; minus the number of digits to be printed before the decimal point, minus 1
+;;; for the decimal point. So, in this case, D = W - 1 - 1 = 0.
+;;;
+;;; This means that we must print exactly 0 digits after the decimal point and
+;;; that we must round the number to 0 fractional digits. The latter is doable
+;;; and we round 1.1 to 1.0, BUT the first contradicts the first paragraph of
+;;; 22.3.3.1 which states, "arg is printed as a float". "1." is not a float in
+;;; Common Lisp, since it is read as the integer 1 in base 10.
+;;;
+;;; Therefore, in order to work around this corner case, we explicitly print one
+;;; decimal digit so that the resulting number is recognizable as a float. Since
+;;; the number was rounded to 0 decimal digits, then this digit is 0. This way,
+;;; we get "1." concatenated with "0" that gives us "1.0".
 (def-format-test format.f.45
-    "~2f" (1.1) "1.0")
+    "~2f ~2f" (1.1 1.9) "1.0 2.0")
 
 (def-format-test format.f.45b
     "~3f" (1.1) "1.1")
 
-;; This fails on ECL 15.3.7
+;;; Rationale for FORMAT.F.46: (format nil "~2f ~1f ~0f" 0.01 0.01 0.01) on SBCL
+;;; 1.5.7 evaluates to ".0 .01 .01" which is enough for me to state that these
+;;; three cases are not a part of one equivalence partition and that testing for
+;;; these three cases explicitly is likely to find bugs in implementations:
+;;; * ~2f is a case where the resulting float fits in the width;
+;;; * ~1f is a case where the resulting float does not fit in the width;
+;;; * ~0f is a case where the width is zero and therefore might be handled
+;;;   specially in the code.
 (def-format-test format.f.46
-    "~0f" (0.01) ".0")
+    "~2f ~1f ~0f" (0.01 0.01 0.01) ".0 .0 .0")
 
 ;; sbcl prints "."
 (def-format-test format.f.46b

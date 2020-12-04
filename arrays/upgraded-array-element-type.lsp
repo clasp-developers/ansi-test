@@ -93,7 +93,7 @@
   nil)
 
 ;;; Tests that if Tx is a subtype of Ty, then UAET(Tx) is a subtype
-;;;  of UAET(Ty)  (see section 15.1.2.1, paragraph 3)
+;;;  of UAET(Ty) (see section 15.1.2.1, paragraph 3)
 
 (deftest upgraded-array-element-type.8
   (let ((upgraded-types (mapcar #'upgraded-array-element-type
@@ -108,7 +108,14 @@
                 collect (list type1 type2))))
   nil)
 
-;;; Tests of upgrading NIL (it should be type equivalent to NIL)
+;;; Test of upgrading NIL (it should be type equivalent to NIL).
+;;; This follows from:
+;;;   (1) T1 being a subtype of T2 implies UAET(T1) is a subtype of UAET(T2)
+;;;       (see section 15.1.2.1, paragraph 3),
+;;;   (2) UAET(BIT) being BIT,
+;;;   (3) UAET(CHARACTER) being CHARACTER.
+;;; NIL is a subtype of BIT and CHARACTER, so UAET(NIL) must also be.  But the
+;;; only type that is a subtype of both is NIL.
 
 (deftest upgraded-array-element-type.nil.1
   (let ((uaet-nil (upgraded-array-element-type nil)))

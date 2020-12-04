@@ -28,7 +28,7 @@
      for s1 = (let ((*read-default-float-format* type)) (format nil "~e" x))
      for s2 = (let* ((*read-default-float-format* type)
                      (s (prin1-to-string x))
-                     (exp-pos (1+ (position #\e s))))
+                     (exp-pos (1+ (position #\e s :test #'char-equal))))
                 (if (> x 1)
                     (concatenate 'string (subseq s 0 exp-pos) "+" (subseq s exp-pos))
                     s))
@@ -61,7 +61,7 @@
      for s1 = (let ((*read-default-float-format* type)) (format nil "~e" x))
      for s2 = (let* ((*read-default-float-format* type)
                      (s (prin1-to-string x))
-                     (exp-pos (1+ (position #\e s))))
+                     (exp-pos (1+ (position #\e s :test #'char-equal))))
                 (if (< x -1)
                     (concatenate 'string (subseq s 0 exp-pos) "+" (subseq s exp-pos))
                     s))
@@ -92,7 +92,7 @@
                     (format nil "~6e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "0.0e+0") (string= s s2))
+          unless (and (string-equal s "0.0e+0") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -105,7 +105,7 @@
                     (format nil "~5e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "1.e+0") (string= s s2))
+          unless (and (string-equal s "1.e+0") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -118,7 +118,7 @@
                     (format nil "~4e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "1.e+0") (string= s s2))
+          unless (and (string-equal s "1.e+0") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -131,7 +131,7 @@
                     (format nil "~6e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s " 1.e+0") (string= s s2))
+          unless (and (string-equal s " 1.e+0") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -144,7 +144,7 @@
                     (format nil "~6@e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "+1.e+0") (string= s s2))
+          unless (and (string-equal s "+1.e+0") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -157,7 +157,7 @@
                     (format nil "~5@e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "+1.e+0") (string= s s2))
+          unless (and (string-equal s "+1.e+0") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -170,7 +170,7 @@
                     (format nil "~6e" (- x)))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn (- x)))
-          unless (and (string= s "-1.e+0") (string= s s2))
+          unless (and (string-equal s "-1.e+0") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -186,7 +186,7 @@
                     (format nil "~7,2e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "5.00e-1") (string= s s2))
+          unless (and (string-equal s "5.00e-1") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -199,7 +199,7 @@
                     (format nil "~6,2e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "5.00e-1") (string= s s2))
+          unless (and (string-equal s "5.00e-1") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -212,7 +212,7 @@
                     (format nil "~7,2@e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "+5.00e-1") (string= s s2))
+          unless (and (string-equal s "+5.00e-1") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -225,7 +225,7 @@
                     (format nil "~,2e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "5.00e-1") (string= s s2))
+          unless (and (string-equal s "5.00e-1") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -238,7 +238,7 @@
                     (format nil "~,2e" (- x)))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn (- x)))
-          unless (and (string= s "-5.00e-1") (string= s s2))
+          unless (and (string-equal s "-5.00e-1") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -254,7 +254,7 @@
                     (format nil "~,2,2e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "5.00e-01") (string= s s2))
+          unless (and (string-equal s "5.00e-01") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -270,7 +270,7 @@
                     (format nil "~,2,,-1e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "0.05e+2") (string= s s2))
+          unless (and (string-equal s "0.05e+2") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -283,7 +283,7 @@
                     (format nil "~,2,,0e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "0.50e+0") (string= s s2))
+          unless (and (string-equal s "0.50e+0") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -296,7 +296,7 @@
                     (format nil "~,2,,2e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "50.0e-3") (string= s s2))
+          unless (and (string-equal s "50.0e-3") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -309,7 +309,7 @@
                     (format nil "~,2,,3e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "500.e-4") (string= s s2))
+          unless (and (string-equal s "500.e-4") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -322,7 +322,7 @@
                     (format nil "~,2,,4e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "5000.e-5") (string= s s2))
+          unless (and (string-equal s "5000.e-5") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -338,7 +338,7 @@
                     (format nil "~6,2,,,'*e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "******") (string= s s2))
+          unless (and (string-equal s "******") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -351,7 +351,7 @@
                     (format nil "~7,2,,,'*e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "5.00e-1") (string= s s2))
+          unless (and (string-equal s "5.00e-1") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -366,7 +366,7 @@
                     (format nil "~10,1,,,e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "    5.0e-1") (string= s s2))
+          unless (and (string-equal s "    5.0e-1") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -379,7 +379,7 @@
                     (format nil "~10,1,,,,'*e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "****5.0e-1") (string= s s2))
+          unless (and (string-equal s "****5.0e-1") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -394,7 +394,7 @@
                     (format nil "~,2,,,,,'^e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string= s "5.00^-1") (string= s s2))
+          unless (and (string-equal s "5.00^-1") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -426,8 +426,8 @@
           with ret = nil
           do (multiple-value-bind (s2 s3)
                  (round-ratio-to-n-digits (rationalize x) d)
-               (unless (or (string= s1 s2)
-                           (and s3 (string= s1 s3)))
+               (unless (or (string-equal s1 s2)
+                           (and s3 (string-equal s1 s3)))
                  (push (list x (format nil format-string x) s1 s2 s3) ret)))
           finally (return ret))
      repeat 20
