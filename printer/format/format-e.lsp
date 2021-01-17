@@ -422,7 +422,8 @@
           for format-string = (format nil "~~,~d,,0e" d)
           for s1 = (let* ((*read-default-float-format* type)
                           (s1 (format nil format-string x)))
-                     (subseq s1 (1+ (position #\. s1)) (position #\e s1)))
+                     ;; e might be lowercase or uppercase 
+                     (subseq s1 (1+ (position #\. s1)) (position #\e s1 :test #'char-equal)))
           with ret = nil
           do (multiple-value-bind (s2 s3)
                  (round-ratio-to-n-digits (rationalize x) d)
