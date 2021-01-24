@@ -75,11 +75,13 @@
 (defun character.1.body ()
   (loop for i from 0 below (min 65536 char-code-limit) for c = (code-char i)
         unless (or (null c)
-                   (let ((s (string c)))
+                   (let* ((s (string c))
+                          (sym (make-symbol s)))
                      (and
                       (eqlt (character c) c)
                       (eqlt (character s) c)
-                      (eqlt (character (make-symbol s)) c))))
+                      (= 1 (length (symbol-name sym)))
+                      (eqlt (character sym) c))))
         collect (char-name c)))
 
 (defun character.2.body ()
