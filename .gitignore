@@ -5,6 +5,7 @@
 *.fasl
 *.lx64fsl
 *.lx32fsl
+*.sse2f
 *.bc
 *.tem
 sandbox/
