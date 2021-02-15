@@ -46,3 +46,11 @@
   good)
 
 (def-macro-test prog1.error.1 (prog1 nil))
+
+(deftest prog1.8
+  (prog1 (values 'a 'b))
+  a)
+
+(deftest prog1.9
+  (prog1 (values))
+  nil)
