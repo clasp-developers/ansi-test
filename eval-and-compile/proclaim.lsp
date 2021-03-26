@@ -52,7 +52,7 @@
   t)
 
 (deftest proclaim.error.7
-  (signals-error (proclaim `(ftype . foo)) type-error)
+  (signals-error (proclaim `(ftype . foo)) error)
   t)
 
 (deftest proclaim.error.8
