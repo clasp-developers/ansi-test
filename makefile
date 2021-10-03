@@ -7,6 +7,7 @@
 LISP=ecl
 # LISP=/usr/local/lib/LispWorks/nongraphic-lispworks-4450
 # LISP=acl
+# LISP="lisp -batch -noinit -nositeinit"
 
 MAKE=make
 
