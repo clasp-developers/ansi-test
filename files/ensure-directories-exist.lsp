@@ -106,13 +106,14 @@
 
 ;;; Case where directory shouldn't exist
 
-;; The directort ansi-tests/scratch must not exist before this
-;; test is run
 (deftest ensure-directories-exist.8
   (let* ((subdir (make-pathname :directory '(:relative "scratch")
                                 :defaults *default-pathname-defaults*))
          (pn (make-pathname :name "foo" :type "txt"
                             :defaults subdir)))
+    (ignore-errors
+     (delete-file pn)
+     (delete-file subdir))
     (assert (not (probe-file pn)) ()
             "Delete subdirectory scratch and its contents!")
     (let* ((results nil)
