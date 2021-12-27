@@ -46,6 +46,10 @@
 (defvar *compile-tests* nil "When true, compile the tests before running them.")
 (defvar *expanded-eval* nil "When true, convert the tests into a form that is less likely to have compiler optimizations.")
 (defvar *optimization-settings* '((safety 3)))
+(defvar *compile-batch-size*
+  #+ecl 512
+  #-ecl 16
+  "Number of tests to compile at the same time.")
 
 (defvar *failed-tests* nil "After DO-TESTS, becomes the list of names of tests that have failed")
 (defvar *passed-tests* nil "After DO-TESTS, becomes the list of names of tests that have passed")
@@ -63,7 +67,7 @@
   "A mapping from names of notes to note objects.")
 
 (defstruct (entry (:conc-name nil))
-  pend name props form vals)
+  pend name props form test-function vals)
 
 ;;; Note objects are used to attach information to tests.
 ;;; A typical use is to mark tests that depend on a particular
@@ -232,6 +236,24 @@
     (equal x y))
    (t (eql x y))))
 
+(defun compile* (lambda-expr &optional do-not-muffle-warnings)
+  (if do-not-muffle-warnings
+      (compile nil lambda-expr)
+      (handler-bind
+          ((style-warning #'(lambda (c) (muffle-warning c))))
+        ;; redirecting *error-output* is the best way to get rid of
+        ;; annoying output from the compiler
+        (let ((*error-output* (make-broadcast-stream)))
+          (compile nil lambda-expr)))))
+
+(defun compile-test-function (entry)
+  (or (test-function entry)
+      (setf (test-function entry)
+            (compile* `(lambda ()
+                         (declare (optimize ,@*optimization-settings*))
+                         ,(form entry))
+                      (has-note entry :do-not-muffle-warnings)))))
+
 (defun do-entry (entry &optional
                        (s *standard-output*))
   (catch '*in-test*
@@ -255,12 +277,7 @@
                            (cond
                             (*compile-tests*
                              (multiple-value-list
-                              (funcall (compile
-                                        nil
-                                        `(lambda ()
-                                           (declare
-                                            (optimize ,@*optimization-settings*))
-                                           ,(form entry))))))
+                              (funcall (compile-test-function entry))))
                             (*expanded-eval*
                              (multiple-value-list
                               (expanded-eval (form entry))))
@@ -269,15 +286,15 @@
                               (eval (form entry))))))))
                 (if *catch-errors*
                     (handler-bind
-                     (#-ecl (style-warning #'(lambda (c) (if (has-note entry :do-not-muffle-warnings)
-                                                             c
-                                                           (muffle-warning c))))
-                            (error #'(lambda (c)
-                                       (setf aborted t)
-                                       (setf r (list c))
-                                       (return-from aborted nil))))
-                     (%do))
-                  (%do)))))
+                     ((style-warning #'(lambda (c) (if (has-note entry :do-not-muffle-warnings)
+                                                       c
+                                                       (muffle-warning c))))
+                      (error #'(lambda (c)
+                                 (setf aborted t)
+                                 (setf r (list c))
+                                 (return-from aborted nil))))
+                      (%do))
+                    (%do)))))
 
       (setf (pend entry)
             (or aborted
@@ -354,12 +371,59 @@
           (stream out :direction :output)
         (do-entries stream))))
 
+(defun compile-entries (stream entries &optional
+                                         (number-of-entries (length entries))
+                                         (batch-size (min number-of-entries *compile-batch-size*))
+                                         silent)
+  "Compile all test functions in batches"
+  (do ((remaining-entries entries (nthcdr batch-size remaining-entries))
+       (remaining-number-of-entries number-of-entries (- remaining-number-of-entries batch-size))
+       (body nil nil))
+      ((or (null remaining-entries) (<= remaining-number-of-entries 0)))
+    (unless (or silent
+                (let ((processed-number-of-entries
+                       (- number-of-entries remaining-number-of-entries)))
+                  ;; only output the message every 1024 entries
+                  (= (ceiling processed-number-of-entries 1024)
+                     (ceiling (+ processed-number-of-entries batch-size)
+                              1024))))
+      (format stream "~&~A of ~A tests remaining to be compiled.~%"
+              remaining-number-of-entries number-of-entries))
+    (do ((n 0 (1+ n))
+         (current-entries remaining-entries (rest current-entries)))
+        ((or (null current-entries) (>= n batch-size)
+             (>= n remaining-number-of-entries)))
+      (let ((entry (first current-entries)))
+        (unless (has-note entry :do-not-muffle-warnings)
+          (push `(setf (test-function ,entry)
+                       (lambda ()
+                         (declare (optimize ,@*optimization-settings*))
+                         ,(form entry)))
+                body))))
+    (multiple-value-bind (function warnings-p failure-p)
+        (handler-case
+            (compile* `(lambda () ,@body))
+          (warning () (values nil t t))
+          (error () (values nil t t)))
+      (declare (ignore warnings-p))
+      (if (not failure-p)
+          (funcall function)
+          (if (= batch-size 1)
+              (format stream "~&Cannot compile test function for entry ~A.~%"
+                      (name (first remaining-entries)))
+              ;; Something went wrong, try to narrow down where
+              (compile-entries stream remaining-entries
+                               batch-size (floor batch-size 2)
+                               t))))))
+
 (defun do-entries (s)
   (format s "~&Doing ~A pending test~:P ~
              of ~A tests total.~%"
           (count t (the list (cdr *entries*)) :key #'pend)
           (length (cdr *entries*)))
   (finish-output s)
+  (when *compile-tests*
+    (compile-entries s (cdr *entries*)))
   (dolist (entry (cdr *entries*))
     (when (and (pend entry)
                (not (has-disabled-note entry)))
