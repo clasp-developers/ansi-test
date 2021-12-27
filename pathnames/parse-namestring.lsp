@@ -72,6 +72,14 @@
             (list (list etype result)))))
   nil)
 
+(deftest parse-namestring.5
+  (let* ((pathname (parse-namestring "cltest:temp.dat.newest"))
+         (namestring (namestring pathname)))
+    (and (typep pathname 'logical-pathname)
+         (or (equal namestring "CLSTEST:TEMP.DAT.NEWEST")
+             (equal namestring "CLSTEST:TEMP.DAT.newest"))))
+  t)
+
 ;;; Error tests
 
 (deftest parse-namestring.error.1
