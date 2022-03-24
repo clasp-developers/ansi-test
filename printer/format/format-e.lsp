@@ -131,7 +131,7 @@
                     (format nil "~6e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string-equal s " 1.e+0") (string-equal s s2))
+          unless (and (string-equal s "1.0e+0") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
