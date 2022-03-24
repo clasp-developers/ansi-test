@@ -131,7 +131,7 @@
                     (format nil "~6e" x))
           for s2 = (let ((*read-default-float-format* type))
                      (formatter-call-to-string fn x))
-          unless (and (string-equal s " 1.e+0") (string-equal s s2))
+          unless (and (string-equal s "1.0e+0") (string-equal s s2))
           collect (list x s s2)))
   nil)
 
@@ -313,6 +313,9 @@
           collect (list x s s2)))
   nil)
 
+;;; undefined behaviour: the format string is "~,2,,4E": d is 2 and k
+;;; is 4, but k (4) is not strictly less than d+2 (4).
+#+(or)
 (deftest format.e.20
   (let ((fn (formatter "~,2,,4e")))
     (loop for x in '(1/20 0.05s0 0.05f0 0.05d0 0.05l0)
