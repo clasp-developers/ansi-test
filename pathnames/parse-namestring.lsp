@@ -76,8 +76,8 @@
   (let* ((pathname (parse-namestring "cltest:temp.dat.newest"))
          (namestring (namestring pathname)))
     (and (typep pathname 'logical-pathname)
-         (or (equal namestring "CLSTEST:TEMP.DAT.NEWEST")
-             (equal namestring "CLSTEST:TEMP.DAT.newest"))))
+         (or (equal namestring "CLTEST:TEMP.DAT.NEWEST")
+             (equal namestring "CLTEST:TEMP.DAT.newest"))))
   t)
 
 ;;; Error tests
