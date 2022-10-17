@@ -162,7 +162,7 @@
                    (and (symbolp sym)
                         (eql sym (find-symbol (string c)))
                         (equal (symbol-name sym) (string c))))
-        collect (list c str sym))
+        collect (list i c str sym))
   nil)
 
 (def-syntax-test read-symbol.14
@@ -175,7 +175,7 @@
                    (and (symbolp sym)
                         (eql sym (find-symbol (string c)))
                         (equal (symbol-name sym) (string c))))
-        collect (list c str sym))
+        collect (list i c str sym))
   nil)
 
 (def-syntax-test read-symbol.15
