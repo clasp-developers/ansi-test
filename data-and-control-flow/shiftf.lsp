@@ -79,6 +79,14 @@
       x y)))
   1 2 foo)
 
+#||
+;;;; Disabling this test.  See
+;;;; https://gitlab.common-lisp.net/ansi-test/ansi-test/-/issues/35
+;;;; for more information.  Several lisps return '(a b) and when
+;;;; viewed as a shift register it makes sense to have all the values
+;;;; from first place to be returned so that it can be used directly
+;;;; as the input to another shift register.
+
 ;;; Test that SHIFTF returns a single value, even though the first
 ;;; place has multiple values.
 (deftest shiftf.7
@@ -87,5 +95,6 @@
      (multiple-value-list (shiftf (values x y) (floor 10 3)))
      x y))
   (a) 3 1)
+||#
 
 ;;; Need to add more shiftf tests here
