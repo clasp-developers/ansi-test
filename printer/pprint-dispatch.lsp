@@ -269,7 +269,7 @@
   (loop for x in *mini-universe*
         unless (or (typep x 'real)
                    (eval `(signals-error (let ((table (copy-pprint-dispatch nil)))
-                                           (set-pprint-dispatch t 'identity ',x))
+                                           (set-pprint-dispatch t 'identity ',x table))
                                          error)))
         collect x)
   nil)
@@ -279,7 +279,7 @@
         unless (or (typep x 'real)
                    (eval `(signals-error (let ((table (copy-pprint-dispatch nil)))
                                            (declare (optimize (safety 0)))
-                                           (set-pprint-dispatch t 'identity ',x))
+                                           (set-pprint-dispatch t 'identity ',x table))
                                          error)))
         collect x)
   nil)
