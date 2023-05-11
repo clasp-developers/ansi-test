@@ -309,3 +309,59 @@
   (signals-error (dmc-long-gf-10 nil) error)
   t)
 
+;;; :arguments option
+
+(eval-when (:load-toplevel :compile-toplevel :execute)
+  (report-and-ignore-errors
+   (defparameter *dmc-long-11*
+     (define-method-combination mc-long-11 () ((method-list *))
+       (:arguments x1 &optional (y1 :y1 y1-supplied) &rest r1 &key (z1 :z1 z1-supplied))
+       `(vector ,x1 ,y1 ,y1-supplied ,r1 ,z1 ,z1-supplied
+                ,@(mapcar #'(lambda (m) `(call-method ,m)) method-list)))))
+  (report-and-ignore-errors
+   (defgeneric dmc-long-gf-11a () (:method-combination mc-long-11))
+   (defgeneric dmc-long-gf-11b (x1 &optional y1 &key z1) (:method-combination mc-long-11))
+   (defgeneric dmc-long-gf-11c (x1 &optional y1 &rest r1) (:method-combination mc-long-11)))
+  )
+
+(deftest define-method-combination-long.11.1
+  (eqt *dmc-long-11* 'mc-long-11)
+  t)
+
+(deftest define-method-combination-long.11.2
+    ;; excess required parameters in the :arguments lambda-list are bound to nil
+  (progn
+    (eval '(defmethod dmc-long-gf-11a () 'a))
+    (values
+     (dmc-long-gf-11a)))
+  #(nil :y1 nil nil :z1 nil a))
+
+(deftest define-method-combination-long.11.3
+  (progn
+    (eval '(defmethod dmc-long-gf-11b ((x (eql 1)) &optional y &key z1) 'a))
+    (eval '(defmethod dmc-long-gf-11b ((x integer) &optional (y 2) &key z1) 'b))
+    (values
+     (dmc-long-gf-11b 0)
+     (dmc-long-gf-11b 1)
+     (dmc-long-gf-11b 0 0)
+     (dmc-long-gf-11b 1 1)
+     (dmc-long-gf-11b 1 1 :z1 4)))
+  #(0 :y1 nil nil :z1 nil b) #(1 :y1 nil nil :z1 nil a b) #(0 0 t nil :z1 nil b) #(1 1 t nil :z1 nil a b)
+  #(1 1 t (:z1 4) 4 t a b))
+
+(deftest define-method-combination-long.11.4
+  (progn
+    (eval '(defmethod dmc-long-gf-11c ((x (eql 1)) &optional y &rest r1) 'a))
+    (eval '(defmethod dmc-long-gf-11c ((x integer) &optional (y 2) &rest r1) 'b))
+    (values
+     (dmc-long-gf-11c 0)
+     (dmc-long-gf-11c 1)
+     (dmc-long-gf-11c 0 0)
+     (dmc-long-gf-11c 1 1)
+     (dmc-long-gf-11c 1 1 2 3)))
+  #(0 :y1 nil nil :z1 nil b) #(1 :y1 nil nil :z1 nil a b) #(0 0 t nil :z1 nil b) #(1 1 t nil :z1 nil a b)
+  #(1 1 t (2 3) :z1 nil a b))
+
+(deftest define-method-combination-long.11.5
+  (signals-error (dmc-long-gf-11b nil) error)
+  t)
