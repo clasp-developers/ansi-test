@@ -356,20 +356,76 @@
       (throw '*in-test* nil)
       (do-entries *standard-output*)))
 
+(defun exit (successp &aux (code (if successp 0 1)))
+  #+abcl (ext:quit :status code)
+  #+acl (excl:exit code :no-unwind t :quiet t)
+  #+ccl (ccl:quit code)
+  #+cmucl (handler-case (ext:quit nil code)
+            ;; Only the most recent versions of cmucl support an exit code.
+            ;; If it doesn't, we get a program error (wrong number of args),
+            ;; so catch that and just call quit without the arg.
+            (program-error ()
+              (ext:quit)))
+  #+(or clasp clisp ecl) (ext:quit code)
+  #+gcl (lisp:quit code)
+  #+lispworks (lispworks:quit :status code :ignore-errors-p t)
+  #+sbcl (sb-ext:exit :code code))
+
+(defun load-expected-failures (expected-failures &key (if-does-not-exist :error))
+  "Initialize *expected-failures* and disabled notes from expected-failures.
+If expected-failures is a list then just iterate through the list. If the
+item is a keyword then disable the note by that name. Otherwise add the test
+name to *expected-failures*. If expected-failures is a string or a pathname
+then repeatedly READ each symbol from the file and use the same logic as
+above. if-does-not-exist is passed to OPEN so it behaves as it does there."
+  (let ((*package* (find-package "CL-TEST")))
+    (flet ((add-expected-failure (name)
+             (if (keywordp name)
+                 (disable-note name)
+                 (push name *expected-failures*))))
+      (maphash (lambda (key note)
+                 (declare (ignore key))
+                 (enable-note note))
+               *notes*)
+      (setf *expected-failures* nil)
+      (if (or (stringp expected-failures)
+              (pathnamep expected-failures))
+          (with-open-file (stream expected-failures :if-does-not-exist if-does-not-exist)
+            (cond (stream
+                   (format t "Loading expected failures from ~s~%" expected-failures)
+                   (do ((name (read stream nil stream) (read stream nil stream)))
+                       ((eq name stream))
+                     (add-expected-failure name)))
+                  (t
+                   (format t "Expected failures file ~s not found~%" expected-failures))))
+          (dolist (name expected-failures)
+            (add-expected-failure name))))))
+
+(defvar *sandbox-path* (truename #P"sandbox/"))
+
 (defun do-tests (&key (out *standard-output*)
                       ((:catch-errors *catch-errors*) *catch-errors*)
-                      ((:compile *compile-tests*) *compile-tests*))
-  (setq *failed-tests* nil
-        *passed-tests* nil
-	*unexpected-failures* nil
-	*unexpected-successes* nil)
-  (dolist (entry (cdr *entries*))
-    (setf (pend entry) t))
-  (if (streamp out)
-      (do-entries out)
-      (with-open-file
-          (stream out :direction :output)
-        (do-entries stream))))
+                      ((:compile *compile-tests*) *compile-tests*)
+                      (expected-failures nil expected-failures-p)
+                      exit)
+  (let ((*package* (find-package "CL-TEST")))
+    (setq *failed-tests* nil
+          *passed-tests* nil
+          *unexpected-failures* nil
+          *unexpected-successes* nil)
+    (dolist (entry (cdr *entries*))
+      (setf (pend entry) t))
+    (when expected-failures-p
+      (load-expected-failures expected-failures))
+    (let* ((*default-pathname-defaults* *sandbox-path*)
+           (successp (if (streamp out)
+                         (do-entries out)
+                         (with-open-file
+                             (stream out :direction :output)
+                           (do-entries stream)))))
+      (when exit
+        (exit successp))
+      successp)))
 
 (defun compile-entries (stream entries &optional
                                          (number-of-entries (length entries))
@@ -417,66 +473,43 @@
                                t))))))
 
 (defun do-entries (s)
-  (format s "~&Doing ~A pending test~:P ~
-             of ~A tests total.~%"
-          (count t (the list (cdr *entries*)) :key #'pend)
-          (length (cdr *entries*)))
-  (finish-output s)
-  (when *compile-tests*
-    (compile-entries s (cdr *entries*)))
-  (dolist (entry (cdr *entries*))
-    (when (and (pend entry)
-               (not (has-disabled-note entry)))
-      (let ((success? (do-entry entry s)))
-        (if success?
-          (push (name entry) *passed-tests*)
-          (push (name entry) *failed-tests*))
-        (format s "~@[~<~%~:; ~:@(~S~)~>~]" success?))
-      (finish-output s)
-      ))
-  (let ((pending (pending-tests))
-        (expected-table (make-hash-table :test #'equal)))
-    (dolist (ex *expected-failures*)
-      (setf (gethash ex expected-table) t))
-    (let ((new-failures
-           (loop for pend in pending
-                 unless (gethash pend expected-table)
-                 collect pend)))
-      (if (null pending)
-          (format s "~&No tests failed.")
-        (progn
-          (format t "~&~A out of ~A total tests failed: ~%(~{~a~^~%~})"
-                  (length pending)
-                  (length (cdr *entries*))
-                  pending)
-          (if (null new-failures)
-              (format s "~&No unexpected failures.")
-            (when *expected-failures*
-              (setf *unexpected-failures* new-failures)
-              (format s "~&~A unexpected failures: ~
-                   ~:@(~{~<~%   ~1:;~S~>~
-                         ~^, ~}~)."
-                    (length new-failures)
-                    new-failures)))
-          (when *expected-failures*
-            (let ((pending-table (make-hash-table :test #'equal)))
-              (dolist (ex pending)
-                (setf (gethash ex pending-table) t))
-              (let ((unexpected-successes
-                     (loop :for ex :in *expected-failures*
-                       :unless (gethash ex pending-table) :collect ex)))
-                (if unexpected-successes
-                    (progn
-                      (setf *unexpected-successes* unexpected-successes)
-                      (format t "~&~:D unexpected successes: ~
-                   ~:@(~{~<~%   ~1:;~S~>~
-                         ~^, ~}~)."
-                              (length unexpected-successes)
-                              unexpected-successes))
-                    (format t "~&No unexpected successes.")))))
-          ))
-      (finish-output s)
-      (null pending))))
+  (let ((count (count t (the list (cdr *entries*)) :key #'pend)))
+    (format s "~&Doing ~A pending test~:P ~
+             of ~A test~:P total.~%"
+            count (length (cdr *entries*)))
+    (finish-output s)
+    (when *compile-tests*
+      (compile-entries s (cdr *entries*)))
+    (dolist (entry (cdr *entries*))
+      (when (and (pend entry)
+                 (not (has-disabled-note entry)))
+        (let ((success? (do-entry entry s)))
+          (cond (success?
+                 (push (name entry) *passed-tests*)
+                 (when (member (name entry) *expected-failures*)
+                   (push (name entry) *unexpected-successes*)))
+                (t
+                 (push (name entry) *failed-tests*)
+                 (unless (member (name entry) *expected-failures*)
+                   (push (name entry) *unexpected-failures*))))
+          (format s "~@[~<~%~:; ~:@(~S~)~>~]" success?))
+        (finish-output s)))
+    (setq *passed-tests* (nreverse *passed-tests*)
+          *failed-tests* (nreverse *failed-tests*)
+          *unexpected-failures* (nreverse *unexpected-failures*)
+          *unexpected-successes* (nreverse *unexpected-successes*))
+    (format s "~&~A failure~:P with ~A unexpected failure~:P and ~A unexpected ~
+             success~:*~[es~;~:;es~] out of ~A test~:P.~%~
+             ~:[No failures~;~:*Failures: ~{~%  ~S~}~]~%~
+             ~:[No unexpected failures~;~:*Unexpected failures: ~{~%  ~S~}~]~%~
+             ~:[No unexpected successes~;~:*Unexpected successes: ~{~%  ~S~}~]~%"
+            (length *failed-tests*) (length *unexpected-failures*)
+            (length *unexpected-successes*) count
+            *failed-tests* *unexpected-failures*
+            *unexpected-successes*)
+    (terpri)
+    (finish-output s)
+    (null *unexpected-failures*)))
 
 ;;; Note handling functions and macros
 
@@ -509,7 +542,12 @@
                                ((:compile *compile-tests*) *compile-tests*))
   "Execute randomly chosen tests from TESTS until one fails or until
    COUNT is an integer and that many tests have been executed."
-  (let ((test-vector (coerce tests 'simple-vector)))
+  (let ((*package* (find-package "CL-TEST"))
+        (*default-pathname-defaults* (make-pathname :directory (append (pathname-directory (or *compile-file-pathname*
+                                                                                               *load-pathname*
+                                                                                               *default-pathname-defaults*))
+                                                                       '("sandbox"))))
+        (test-vector (coerce tests 'simple-vector)))
     (let ((n (length test-vector)))
       (when (= n 0) (error "Must provide at least one test."))
       (loop for i from 0

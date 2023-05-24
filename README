@@ -2,8 +2,7 @@ This directory contains a partial Common Lisp standards compliance
 test suite.
 
 To run the tests, load doit.lsp.  This will load and
-run the tests.  To just load the tests, load gclload1.lsp
-and gclload2.lsp.
+run the tests.  To just load the tests, load init.lsp.
 
 Individual tests may be run by (rt:do-test '<test name>).
 
@@ -29,7 +28,7 @@ I've added a DEFNOTE form to define note objects whose names
 can be attached to properties of tests, to enable selective
 disabling of classes of tests.
 
-The file doit.lsp disables some contentious tests under certain
+The file init.lsp disables some contentious tests under certain
 implementations using the note mechanism.  If any implementor
 wishes that some of these tests be inhibited in their implementation,
 please contact me and I will add code to do so.

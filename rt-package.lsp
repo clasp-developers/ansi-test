@@ -49,6 +49,7 @@
                                #:rem-test
                                #:defnote
                                #:my-aref
+                               #:load-expected-failures
                                #:*catch-errors*
                                #:*passed-tests*
                                #:*failed-tests*
