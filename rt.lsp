@@ -57,6 +57,9 @@
 (defvar *expected-failures* nil
   "A list of test names that are expected to fail.")
 
+(defvar *unknown-expected-failures* nil
+  "A list of test names that are expected to fail but are not valid names.")
+
 (defvar *unexpected-successes* nil
   "A list of tests that passed but were expected to fail.")
 
@@ -380,9 +383,11 @@ then repeatedly READ each symbol from the file and use the same logic as
 above. if-does-not-exist is passed to OPEN so it behaves as it does there."
   (let ((*package* (find-package "CL-TEST")))
     (flet ((add-expected-failure (name)
-             (if (keywordp name)
-                 (disable-note name)
-                 (push name *expected-failures*))))
+             (cond ((and (keywordp name) (disable-note name nil)))
+                   ((member name (cdr *entries*) :key #'name)
+                    (push name *expected-failures*))
+                   (t
+                    (push name *unknown-expected-failures*)))))
       (maphash (lambda (key note)
                  (declare (ignore key))
                  (enable-note note))
@@ -399,7 +404,9 @@ above. if-does-not-exist is passed to OPEN so it behaves as it does there."
                   (t
                    (format t "Expected failures file ~s not found~%" expected-failures))))
           (dolist (name expected-failures)
-            (add-expected-failure name))))))
+            (add-expected-failure name))))
+    (setq *unknown-expected-failures* (nreverse *unknown-expected-failures*)
+          *expected-failures* (nreverse *expected-failures*))))
 
 (defvar *sandbox-path* (truename #P"sandbox/"))
 
@@ -474,8 +481,7 @@ above. if-does-not-exist is passed to OPEN so it behaves as it does there."
 
 (defun do-entries (s)
   (let ((count (count t (the list (cdr *entries*)) :key #'pend)))
-    (format s "~&Doing ~A pending test~:P ~
-             of ~A test~:P total.~%"
+    (format s "~&Doing ~A pending test~:P of ~A test~:P total.~%"
             count (length (cdr *entries*)))
     (finish-output s)
     (when *compile-tests*
@@ -498,11 +504,14 @@ above. if-does-not-exist is passed to OPEN so it behaves as it does there."
           *failed-tests* (nreverse *failed-tests*)
           *unexpected-failures* (nreverse *unexpected-failures*)
           *unexpected-successes* (nreverse *unexpected-successes*))
-    (format s "~&~A failure~:P with ~A unexpected failure~:P and ~A unexpected ~
+    (format s "~&~@[Found unknown test or note names in expected failure list:~
+               ~%  ~<~@{~S~^, ~:_~}~:>~%~]~
+             ~A failure~:P with ~A unexpected failure~:P and ~A unexpected ~
              success~:*~[es~;~:;es~] out of ~A test~:P.~%~
              ~:[No failures~;~:*Failures: ~{~%  ~S~}~]~%~
              ~:[No unexpected failures~;~:*Unexpected failures: ~{~%  ~S~}~]~%~
              ~:[No unexpected successes~;~:*Unexpected successes: ~{~%  ~S~}~]~%"
+            *unknown-expected-failures*
             (length *failed-tests*) (length *unexpected-failures*)
             (length *unexpected-successes*) count
             *failed-tests* *unexpected-failures*
@@ -521,19 +530,27 @@ above. if-does-not-exist is passed to OPEN so it behaves as it does there."
        (setf (gethash (note-name note) *notes*) note)
        note)))
 
-(defun disable-note (n)
+(defun disable-note (n &optional (errorp t))
   (let ((note (if (note-p n) n
-                (setf n (gethash n *notes*)))))
-    (unless note (error "~A is not a note or note name." n))
-    (setf (note-disabled note) t)
-    note))
+                  (setf n (gethash n *notes*)))))
+    (cond (note
+           (setf (note-disabled note) t)
+           note)
+          (errorp
+           (error "~A is not a note or note name." n))
+          (t
+           nil))))
 
-(defun enable-note (n)
+(defun enable-note (n &optional (errorp t))
   (let ((note (if (note-p n) n
                 (setf n (gethash n *notes*)))))
-    (unless note (error "~A is not a note or note name." n))
-    (setf (note-disabled note) nil)
-    note))
+    (cond (note
+           (setf (note-disabled note) nil)
+           note)
+          (errorp
+           (error "~A is not a note or note name." n))
+          (t
+           nil))))
 
 ;;; Extended random regression
 
