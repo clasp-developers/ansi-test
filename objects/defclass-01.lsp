@@ -109,6 +109,64 @@
   (notnot-mv (typep #'(setf s3-a) 'generic-function))
   t)
 
+(deftest class-04.error.1
+  (signals-error
+   (s1-r)
+   program-error)
+  t)
+
+(deftest class-04.error.2
+  (signals-error
+   (let ((c (make-instance 'class-04)))
+     (setf (slot-value c 's1) 'a)
+     (s1-r c 'b))
+   program-error)
+  t)
+
+(deftest class-04.error.3
+  (signals-error
+   (s1-w)
+   program-error)
+  t)
+
+(deftest class-04.error.4
+  (signals-error
+   (s2-w (make-instance 'class-04))
+   program-error)
+  t)
+
+(deftest class-04.error.5
+  (signals-error
+   (s2-w (make-instance 'class-04) 'a 'b)
+   program-error)
+  t)
+
+(deftest class-04.error.6
+  (signals-error
+   (s3-a)
+   program-error)
+  t)
+
+(deftest class-04.error.7
+  (signals-error
+   (let ((c (make-instance 'class-04)))
+     (setf (slot-value c 's3) 'a)
+     (s3-a c 'b))
+   program-error)
+  t)
+
+(deftest class-04.error.8
+  (signals-error
+   (setf (s3-a) 'a)
+   program-error)
+  t)
+
+(deftest class-04.error.9
+  (signals-error
+   (setf (s3-a (make-instance 'class-04) 'b) 'a)
+   program-error)
+  t)
+
 ;;;;
 
 (defclass class-05 () (s1 (s2 :allocation :instance) (s3 :allocation :class)))
