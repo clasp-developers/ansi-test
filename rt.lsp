@@ -408,7 +408,7 @@ above. if-does-not-exist is passed to OPEN so it behaves as it does there."
     (setq *unknown-expected-failures* (nreverse *unknown-expected-failures*)
           *expected-failures* (nreverse *expected-failures*))))
 
-(defvar *sandbox-path* (truename #P"sandbox/"))
+(defparameter *sandbox-path* (ignore-errors (truename #P"sandbox/")))
 
 (defun do-tests (&key (out *standard-output*)
                       ((:catch-errors *catch-errors*) *catch-errors*)
