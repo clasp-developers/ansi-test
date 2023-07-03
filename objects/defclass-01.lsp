@@ -109,6 +109,11 @@
   (notnot-mv (typep #'(setf s3-a) 'generic-function))
   t)
 
+;;; The following tests check that readers, writers and accessors take the
+;;; correct number of arguments. Section 7.5.2 says specifically that writers
+;;; and accessors take two arguments. It seems to imply that readers take one
+;;; argument.
+
 (deftest class-04.error.1
   (signals-error
    (s1-r)
