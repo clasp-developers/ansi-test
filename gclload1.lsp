@@ -1,8 +1,9 @@
 #+ecl (si::package-lock (find-package "COMMON-LISP") nil)
 #+(and ecl (not ecl-bytecmp)) (require :cmp)
-#+(and ecl (not ecl-bytecmp)) (setq c:*suppress-compiler-warnings* t
-                                    c:*suppress-compiler-notes*    t
-                                    c:*suppress-compiler-messages* t)
+#+(and ecl (not ecl-bytecmp)) (setq c:*suppress-compiler-messages*
+                                    '(or c:compiler-warning
+                                         c:compiler-note
+                                         style-warning))
 #+:armedbear (require 'pprint)
 #+cmu
 (progn
