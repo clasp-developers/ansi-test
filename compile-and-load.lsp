@@ -43,7 +43,8 @@
         (handler-bind
          #-sbcl ()
          #+sbcl ((sb-ext:code-deletion-note #'muffle-warning))
-         (compile-file pathname)))
+         (when (nth-value 2 (compile-file pathname))
+           (error "Compilation of ~a failed" pathname))))
       (if former-data
           (setf (cadr former-data) source-write-time)
         (push (list pathname source-write-time) *compiled-and-loaded-files*))
