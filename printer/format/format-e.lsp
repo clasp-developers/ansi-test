@@ -432,7 +432,7 @@
                  (round-ratio-to-n-digits (rationalize x) d)
                (unless (or (string-equal s1 s2)
                            (and s3 (string-equal s1 s3)))
-                 (push (list x (format nil format-string x) s1 s2 s3) ret)))
+                 (push (list x format-string (format nil format-string x) s1 s2 s3) ret)))
           finally (return ret))
      repeat 20
      if incorrect-roundings
