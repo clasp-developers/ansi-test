@@ -429,7 +429,7 @@
                      (subseq s1 (1+ (position #\. s1)) (position #\e s1 :test #'char-equal)))
           with ret = nil
           do (multiple-value-bind (s2 s3)
-                 (round-ratio-to-n-digits (rationalize x) d)
+                 (round-ratio-to-n-digits (rational x) d)
                (unless (or (string-equal s1 s2)
                            (and s3 (string-equal s1 s3)))
                  (push (list x format-string (format nil format-string x) s1 s2 s3) ret)))
