@@ -19,8 +19,29 @@
             compiler:*compile-verbose* nil
             compiler:*compile-print* nil)
 
-#+lispworks (setq compiler::*compiler-warnings* nil)
-#+lispworks (make-echo-stream *standard-input* *standard-output*)
+#+lispworks
+(progn
+  ;; This is required for test make-array.28 in ./arrays/make-array.lsp,
+  ;; because it generates a string to read a form which is 
+  ;; (1- (min 10000 array-rank-limit)) nested.  The stack is full of pairs
+  ;; of SYSTEM::READ-LIST and  SYSTEM::READ-MAYBE-NOTHING calling each other. 
+  ;; 
+  (unless (> (hcl:current-stack-length) 150000)
+    (let ((amount (or #+lispworks-32bit 500
+                      #+lispworks-64bit 3000)))
+      (when amount
+        (hcl:extend-current-stack amount))))
+
+  ;; The tests efectively assume the default character element type is character
+  (lw:set-default-character-element-type 'character)
+
+  (pushnew :utf-8 sys:*specific-valid-file-encodings*)
+
+  (setq system:*file-length-error-p* :error)
+  (setq system:*right-paren-whitespace* nil)
+
+  )
+
 #+clisp (setq custom::*warn-on-floating-point-contagion* nil)
 
 ;;; Configure logical pathnames
