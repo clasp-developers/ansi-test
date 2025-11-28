@@ -7,7 +7,7 @@
 ;; (eval-when (:execute :compile-toplevel :load-toplevel)
 #| (defpackage :regression-test
     (:use :cl)
-    (:nicknames :rtest #-lispworks :rt)
+    (:nicknames :rtest :rt)
     (:export
      #:*do-tests-when-defined*
      #:*compile-tests*
@@ -29,7 +29,7 @@
  (let* ((name (symbol-name :regression-test))
         (pkg (find-package name)))
    (unless pkg (setq pkg (make-package name
-                                       :nicknames (mapcar #'symbol-name '(:rtest #-lispworks :rt))
+                                       :nicknames (mapcar #'symbol-name '(:rtest :rt))
                                        :use '(#-wcl :cl #+wcl :lisp)
                                        )))
    (let ((*package* pkg))
