@@ -470,8 +470,8 @@ representation of ratio."
                do (setf x (if (< x 10^n) (* x 10) (/ x 10)))
                finally (return x)))
          (below 10^n))
-    (loop for i below n
-       with 10^n-i = below
+    (loop with 10^n-i = below
+          for i below n
        do (loop until (and (<= below x)
                            (< x (+ below 10^n-i)))
              do (if (> below x)

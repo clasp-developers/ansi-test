@@ -52,7 +52,7 @@
         ((arrayp orig-sequence)
          (make-array (length result) :initial-contents result
                      :element-type (array-element-type orig-sequence)))
-        (t (assert nil))))))
+        (t (error "Should never reach here"))))))
 
 (defun make-random-rdup-params (maxlen)
   "Make random input parameters for REMOVE-DUPLICATES."
