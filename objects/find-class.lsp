@@ -275,6 +275,37 @@
         (funcall fn obj2)))))
   t 1 2 nil t 1 2)
 
+;;; CLHS defclass: If a defclass form appears as a top level form,
+;;; [...] the compiler must make the class definition available to be
+;;; returned by find-class when its environment argument is a value
+;;; received as the environment parameter of a macro.
+
+(defvar *find-class-in-environment-results*)
+
+(deftest find-class.24
+  (let ((file-name "find-class-in-environment.lisp")
+        (results nil))
+    (with-open-file (s file-name :direction :output :if-exists :supersede)
+      (prin1 '(defclass test-class () ())
+             s)
+      (prin1 '(defmacro test-macro (&environment env)
+               (let ((class (find-class 'test-class nil env)))
+                 `(list ,(notnot (typep class 'class))
+                        ,(notnot (and class (eq (class-name class) 'test-class)))
+                        ,(null (typep nil 'test-class env)))))
+             s)
+      (prin1 '(setf *find-class-in-environment-results* (test-macro))
+             s)
+      (terpri s))
+    (setf (find-class 'test-class) nil)
+    (load file-name)
+    (push *find-class-in-environment-results* results)
+    (setf (find-class 'test-class) nil)
+    (load (compile-file file-name))
+    (push *find-class-in-environment-results* results)
+    results)
+  ((t t t) (t t t)))
+
 ;;; Error tests
 
 (deftest find-class.error.1
