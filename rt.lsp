@@ -480,7 +480,15 @@ above. if-does-not-exist is passed to OPEN so it behaves as it does there."
                                t))))))
 
 (defun do-entries (s)
-  (let ((count (count t (the list (cdr *entries*)) :key #'pend)))
+  (let ((count (count t (the list (cdr *entries*)) :key #'pend))
+        ;; When S is not *standard-output* (e.g. a log file passed via
+        ;; :OUT), still echo the end-of-run summary to the screen so
+        ;; the caller sees the verdict without having to tail the log.
+        ;; When S already is *standard-output*, this is just S and the
+        ;; summary prints exactly once.
+        (summary (if (eq s *standard-output*)
+                     s
+                     (make-broadcast-stream s *standard-output*))))
     (format s "~&Doing ~A pending test~:P of ~A test~:P total.~%"
             count (length (cdr *entries*)))
     (finish-output s)
@@ -504,7 +512,7 @@ above. if-does-not-exist is passed to OPEN so it behaves as it does there."
           *failed-tests* (nreverse *failed-tests*)
           *unexpected-failures* (nreverse *unexpected-failures*)
           *unexpected-successes* (nreverse *unexpected-successes*))
-    (format s "~&~@[Found unknown test or note names in expected failure list:~
+    (format summary "~&~@[Found unknown test or note names in expected failure list:~
                ~%  ~<~@{~S~^, ~:_~}~:>~%~]~
              ~A failure~:P with ~A unexpected failure~:P and ~A unexpected ~
              success~:*~[es~;~:;es~] out of ~A test~:P.~%~
@@ -516,7 +524,7 @@ above. if-does-not-exist is passed to OPEN so it behaves as it does there."
             (length *unexpected-successes*) count
             *failed-tests* *unexpected-failures*
             *unexpected-successes*)
-    (terpri)
+    (terpri summary)
     (finish-output s)
     (null *unexpected-failures*)))
 
